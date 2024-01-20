@@ -1,8 +1,6 @@
-import 'dart:convert';
-
-import 'package:azam_shoshin_task/model/model_main.dart';
+import 'package:azam_shoshin_task/screens/cubit/app_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -105,57 +103,23 @@ class BottomApp extends StatefulWidget {
 }
 
 class _BottomApp extends State<BottomApp> with SingleTickerProviderStateMixin {
-  late List _data = [];
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  Future<List<Model1>> _readJson() async {
-    final String response =
-        await rootBundle.loadString('assets/dummy_tasks.json');
-    final data = await json.decode(response);
-    setState(() {
-      _data = data;
-    });
-    final List<Model1> tasks = [];
-    for (var i = 0; i < data.length; i++) {
-      tasks.add(Model1.fromJson(data[i]));
-    }
-    return tasks;
-  }
-
+  late AppCubit appCubit;
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    context.read<AppCubit>().controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-
-    _animation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 0.3),
-        weight: 1.0,
-      ),
-    ]).animate(_controller);
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _controller.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        _controller.forward();
-      }
-    });
-
-    _readJson();
-    _startAnimation();
-  }
-
-  void _startAnimation() {
-    _controller.forward(from: 0.0);
+    appCubit = context.read<AppCubit>();
+    appCubit.readJson1();
+    appCubit.animationFunction();
+    appCubit.startAnimation();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    context.read<AppCubit>().controller.dispose();
     super.dispose();
   }
 
@@ -211,254 +175,272 @@ class _BottomApp extends State<BottomApp> with SingleTickerProviderStateMixin {
         body: TabBarView(
           children: [
             SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(300 * _animation.value, 0.0),
-                          child: Row(
-                            children: [
-                              const Text(
-                                'Rajesh earned ',
+              child: BlocBuilder<AppCubit, AppState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        AnimatedBuilder(
+                          animation: context.read<AppCubit>().animation,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(
+                                  300 *
+                                      context.read<AppCubit>().animation.value,
+                                  0.0),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'Rajesh earned ',
+                                  ),
+                                  Text(
+                                    '₹ 120',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Text(' from BookMyShow Offer'),
+                                ],
                               ),
-                              Text(
-                                '₹ 120',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Text(' from BookMyShow Offer'),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    Row(children: [
-                      Icon(MdiIcons.fire, color: Colors.amber),
-                      const Text('Trending offers'),
-                    ]),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 200,
-                      child: FutureBuilder(
-                          future: _readJson(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView.builder(
-                                  itemCount: _data.length,
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) {
-                                    int number =
-                                        int.parse(_data[index]['total_lead']);
-                                    String formattedNumber =
-                                        NumberFormat.compact().format(number);
-                                    return Card(
-                                      child: Stack(
-                                        children: [
-                                          InkWell(
-                                            onTap: () => Navigator.pushNamed(
-                                              context,
-                                              '/screen_2',
-                                            ),
-                                            splashColor: Theme.of(context)
-                                                .primaryColor
-                                                .withOpacity(0.5),
-                                            child: Image.network(
-                                              _data[index]['brand']['logo'],
-                                              fit: BoxFit.contain,
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  2.3,
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  3.5,
-                                            ),
-                                          ),
-                                          Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.black
-                                                      .withOpacity(0.8),
-                                                ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        Row(children: [
+                          Icon(MdiIcons.fire, color: Colors.amber),
+                          const Text('Trending offers'),
+                        ]),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 200,
+                          child: FutureBuilder(
+                            future: context.read<AppCubit>().readJson1(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return ListView.builder(
+                                    itemCount: state.data1.length,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context, index) {
+                                      int number = int.parse(
+                                          state.data1[index].totalLead);
+                                      String formattedNumber =
+                                          NumberFormat.compact().format(number);
+                                      return Card(
+                                        child: Stack(
+                                          children: [
+                                            InkWell(
+                                              onTap: () => Navigator.pushNamed(
+                                                context,
+                                                '/details',
+                                              ),
+                                              splashColor: Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(0.5),
+                                              child: Image.network(
+                                                state.data1[index].brand.logo,
+                                                fit: BoxFit.contain,
                                                 width: MediaQuery.of(context)
                                                         .size
                                                         .width /
                                                     2.3,
-                                                height: 80,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        _data[index]['brand']
-                                                            ['title'],
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        'Get Rs. ${_data[index]['payout_amt']}',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                      ),
-                                                      Row(children: [
-                                                        Icon(
-                                                          MdiIcons
-                                                              .lightningBolt,
-                                                          color: const Color
-                                                              .fromARGB(255,
-                                                              233, 159, 62),
-                                                          size: 16,
-                                                        ),
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height /
+                                                    3.5,
+                                              ),
+                                            ),
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black
+                                                        .withOpacity(0.8),
+                                                  ),
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width /
+                                                      2.3,
+                                                  height: 80,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
                                                         Text(
-                                                          formattedNumber,
+                                                          state.data1[index]
+                                                              .brand.title,
                                                           style:
                                                               const TextStyle(
-                                                            color:
-                                                                Color.fromARGB(
-                                                                    255,
-                                                                    233,
-                                                                    159,
-                                                                    62),
-                                                            fontSize: 14,
+                                                            color: Colors.white,
                                                           ),
                                                         ),
-                                                      ]),
-                                                    ],
+                                                        Text(
+                                                          'Get Rs. ${state.data1[index].payoutAmt}',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                          ),
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                        ),
+                                                        Row(children: [
+                                                          Icon(
+                                                            MdiIcons
+                                                                .lightningBolt,
+                                                            color: const Color
+                                                                .fromARGB(255,
+                                                                233, 159, 62),
+                                                            size: 16,
+                                                          ),
+                                                          Text(
+                                                            formattedNumber,
+                                                            style:
+                                                                const TextStyle(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      233,
+                                                                      159,
+                                                                      62),
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                        ]),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                            } else if (snapshot.hasError) {
-                              return const Text('Error');
-                            } else {
-                              return const CircularProgressIndicator();
-                            }
-                          }),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.apps, color: Theme.of(context).primaryColor),
-                        const Text('More offers'),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _data.length,
-                      itemBuilder: (context, index) {
-                        var color =
-                            _data[index]['custom_data']['dominant_color'];
-                        Color hexToColor(String hexColor) {
-                          hexColor = hexColor.replaceAll("#", "");
-                          int hexValue = int.parse(hexColor, radix: 16);
-                          return Color(hexValue | 0xFF000000);
-                        }
-
-                        int number = int.parse(_data[index]['total_lead']);
-                        String formattedNumber =
-                            NumberFormat.compact().format(number);
-                        return Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(
-                              color: hexToColor(color),
-                              width: 2,
-                            ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    });
+                              } else if (snapshot.hasError) {
+                                return const Text('Error');
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            },
                           ),
-                          child: ListTile(
-                            leading: Image.network(
-                              _data[index]['thumbnail'],
-                              fit: BoxFit.contain,
-                              width: 100,
-                              height: 100,
-                            ),
-                            title: Text(
-                              _data[index]['brand']['title'],
-                            ),
-                            subtitle: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                OutlinedButton(
-                                  style: ButtonStyle(
-                                    side: MaterialStateProperty.all<BorderSide>(
-                                      BorderSide(
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                    ),
-                                    shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                    ),
-                                  ),
-                                  onPressed: () =>
-                                      Navigator.pushNamed(context, '/screen_2'),
-                                  child: Text(
-                                    'Get ${_data[index]['payout']}',
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  ),
+                          //
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.apps,
+                                color: Theme.of(context).primaryColor),
+                            const Text('More offers'),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: state.data1.length,
+                          itemBuilder: (context, index) {
+                            var color =
+                                state.data1[index].customData.dominantColor;
+                            Color hexToColor(String hexColor) {
+                              hexColor = hexColor.replaceAll("#", "");
+                              int hexValue = int.parse(hexColor, radix: 16);
+                              return Color(hexValue | 0xFF000000);
+                            }
+
+                            int number =
+                                int.parse(state.data1[index].totalLead);
+                            String formattedNumber =
+                                NumberFormat.compact().format(number);
+                            return Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: hexToColor(color),
+                                  width: 2,
                                 ),
-                                Row(
+                              ),
+                              child: ListTile(
+                                leading: Image.network(
+                                  state.data1[index].thumbnail,
+                                  fit: BoxFit.contain,
+                                  width: 100,
+                                  height: 100,
+                                ),
+                                title: Text(
+                                  state.data1[index].brand.title,
+                                ),
+                                subtitle: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Icon(
-                                      MdiIcons.lightningBolt,
-                                      color: const Color.fromARGB(
-                                          255, 233, 159, 62),
-                                      size: 16,
-                                    ),
-                                    Text(
-                                      formattedNumber,
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 233, 159, 62),
+                                    OutlinedButton(
+                                      style: ButtonStyle(
+                                        side: MaterialStateProperty.all<
+                                            BorderSide>(
+                                          BorderSide(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                          ),
+                                        ),
+                                        shape: MaterialStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                        ),
                                       ),
+                                      onPressed: () => Navigator.pushNamed(
+                                          context, '/details'),
+                                      child: Text(
+                                        'Get ${state.data1[index].payout}',
+                                        style: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          MdiIcons.lightningBolt,
+                                          color: const Color.fromARGB(
+                                              255, 233, 159, 62),
+                                          size: 16,
+                                        ),
+                                        Text(
+                                          formattedNumber,
+                                          style: const TextStyle(
+                                            color: Color.fromARGB(
+                                                255, 233, 159, 62),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             const Center(

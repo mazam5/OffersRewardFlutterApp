@@ -1,8 +1,10 @@
+import 'package:azam_shoshin_task/screens/cubit/app_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'screens/screen_main.dart';
 import 'screens/screen_details.dart';
+import 'screens/screen_main.dart';
 
 void main() => runApp(const MyApp());
 
@@ -23,8 +25,14 @@ class MyApp extends StatelessWidget {
         fontFamily: GoogleFonts.inter().fontFamily,
       ),
       routes: {
-        '/': (context) => const ScreenMain(),
-        '/screen_2': (context) => const ScreenDetails(),
+        '/': (context) => BlocProvider(
+              create: (context) => AppCubit(),
+              child: const ScreenMain(),
+            ),
+        '/details': (context) => BlocProvider(
+              create: (context) => AppCubit(),
+              child: const ScreenDetails(),
+            ),
       },
     );
   }
