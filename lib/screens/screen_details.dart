@@ -1,4 +1,3 @@
-import 'package:azam_shoshin_task/model/model_details.dart';
 import 'package:azam_shoshin_task/screens/cubit/app_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,11 +13,13 @@ class ScreenDetails extends StatefulWidget {
 }
 
 class _ScreenDetailsState extends State<ScreenDetails> {
+  late AppCubit appCubit = context.read<AppCubit>();
+
   @override
   void initState() {
     super.initState();
-    context.read<AppCubit>().readJson1();
-    context.read<AppCubit>().readJson2();
+    appCubit.readJson1();
+    appCubit.readJson2();
   }
 
   @override
@@ -125,132 +126,112 @@ class _ScreenDetailsState extends State<ScreenDetails> {
                         child: CircularProgressIndicator(),
                       )
                     : Expanded(
-                        child: FutureBuilder<List<Model2>>(
-                          future: context.read<AppCubit>().readJson2(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              if (state.data2.isNotEmpty) {
-                                state.data2.sort(
-                                  (a, b) =>
-                                      (b.isCompleted ? 1 : 0) -
-                                      (a.isCompleted ? 1 : 0),
-                                );
-                              }
-                              return ListView.builder(
-                                itemCount: state.data2.length,
-                                itemBuilder: (context, index) {
-                                  return Card(
-                                    elevation: 0.5,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      side: BorderSide(
-                                        color: state.data2[index].isCompleted
-                                            ? Colors.green
-                                            : state.data2[index] !=
-                                                    state.data2[2]
-                                                ? Colors.amber
-                                                : Colors.transparent,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: ListTile(
-                                      title: Text(
-                                        state.data2[index].title,
-                                        style: TextStyle(
-                                            decoration:
-                                                state.data2[index].isCompleted
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      subtitle: !state.data2[index].isCompleted
-                                          ? Text(
-                                              state.data2[index].description,
-                                              style: const TextStyle(
-                                                color: Colors.grey,
-                                              ),
-                                            )
-                                          : null,
-                                      leading: state.data2[index].isCompleted
-                                          ? Container(
-                                              width: 30,
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                color: Colors.green,
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                              ),
-                                              child: const Icon(
-                                                Icons.check,
-                                                color: Colors.white,
-                                                size: 30,
-                                              ),
-                                            )
-                                          : state.data2[index] != state.data2[2]
-                                              ? Container(
-                                                  width: 30,
-                                                  height: 30,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.amber,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
-                                                  ),
-                                                  child: Icon(
-                                                    MdiIcons.timerSandEmpty,
-                                                    color: Colors.white,
-                                                  ),
-                                                )
-                                              : Container(
-                                                  width: 30,
-                                                  height: 30,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.grey[200],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
-                                                  ),
-                                                  child: null),
-                                      trailing: Container(
-                                        width: 50,
-                                        padding: const EdgeInsets.all(10),
+                        child: ListView.builder(
+                          itemCount: state.data2.length,
+                          itemBuilder: (context, index) {
+                            if (state.data2.isNotEmpty) {
+                              state.data2.sort(
+                                (a, b) =>
+                                    (b.isCompleted ? 1 : 0) -
+                                    (a.isCompleted ? 1 : 0),
+                              );
+                            }
+                            return Card(
+                              elevation: 0.5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: state.data2[index].isCompleted
+                                      ? Colors.green
+                                      : state.data2[index] != state.data2[2]
+                                          ? Colors.amber
+                                          : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                  state.data2[index].title,
+                                  style: TextStyle(
+                                      decoration: state.data2[index].isCompleted
+                                          ? TextDecoration.lineThrough
+                                          : TextDecoration.none,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: !state.data2[index].isCompleted
+                                    ? Text(
+                                        state.data2[index].description,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      )
+                                    : null,
+                                leading: state.data2[index].isCompleted
+                                    ? Container(
+                                        width: 30,
+                                        height: 30,
                                         decoration: BoxDecoration(
-                                          color: state.data2[index].isCompleted
-                                              ? Colors.green
-                                              : state.data2[index] !=
-                                                      state.data2[2]
-                                                  ? Colors.amber
-                                                  : Colors.grey,
+                                          color: Colors.green,
                                           borderRadius:
                                               BorderRadius.circular(50),
                                         ),
-                                        child: Text(
-                                          state.data2[index].payout
-                                              .toString()
-                                              .replaceAll('.00', ''),
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 30,
                                         ),
-                                      ),
+                                      )
+                                    : state.data2[index] != state.data2[2]
+                                        ? Container(
+                                            width: 30,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              color: Colors.amber,
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: Icon(
+                                              MdiIcons.timerSandEmpty,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Container(
+                                            width: 30,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[200],
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: null),
+                                trailing: Container(
+                                  width: 50,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: state.data2[index].isCompleted
+                                        ? Colors.green
+                                        : state.data2[index] != state.data2[2]
+                                            ? Colors.amber
+                                            : Colors.grey,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: Text(
+                                    state.data2[index].payout
+                                        .toString()
+                                        .replaceAll('.00', ''),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  );
-                                },
-                              );
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                child: Text('Error'),
-                              );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
+                        //
                       ),
                 state.data2.isEmpty
                     ? const Center(child: CircularProgressIndicator())
