@@ -182,13 +182,11 @@ class _BottomApp extends State<BottomApp> with SingleTickerProviderStateMixin {
                       children: [
                         const SizedBox(height: 10),
                         AnimatedBuilder(
-                          animation: context.read<AppCubit>().animation,
+                          animation: appCubit.animation,
                           builder: (context, child) {
                             return Transform.translate(
-                              offset: Offset(
-                                  300 *
-                                      context.read<AppCubit>().animation.value,
-                                  0.0),
+                              offset:
+                                  Offset(300 * appCubit.animation.value, 0.0),
                               child: Row(
                                 children: [
                                   const Text(
